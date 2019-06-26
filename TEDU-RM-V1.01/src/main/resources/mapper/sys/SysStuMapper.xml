@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.kb.sys.dao.SysStuDao">
+  
+  	<!-- 查询所有学生信息 -->
+  	<select id="findPageObjects" resultType="com.kb.sys.entity.SysStu">
+  		select * from sys_stu
+  		<include refid="queryWhereId"/>
+  		order by id 
+  		limit #{startIndex},#{pageSize}
+  		
+   </select>
+  	<sql id="queryWhereId">
+      <where>
+       <if test="sname!=null and sname!=''">
+        sname like concat("%",#{sname},"%")
+       </if>
+      </where>
+      </sql>
+      
+      <!-- 根据id删除学生信息 -->
+  	<delete id="deleteObjects" >
+  	delete from sys_stu where id in <!-- (1,2,3,4,5) -->
+       <foreach collection="ids"
+                open="("
+                close=")"
+                separator=","
+                item="id">
+               #{id}
+       </foreach>
+   	</delete>
+   	<delete id="deleteObject">
+   	delete from sys_stu where id=#{id}
+   	</delete>
+   	
+   	
+  	<!-- 添加学生信息 -->
+  	<insert id="insertObject" parameterType="com.kb.sys.entity.SysStu">
+  		insert into sys_stu (sname,loginname,password,class_no) 
+  		values(#{sname},#{loginname},#{password},#{classNo})
+  	</insert>
+  	
+  	<update id="updateObject">
+  		update sys_stu set sname=#{sname},loginname=#{loginname},password=#{password},class_No=#{classNo} where id=#{id}
+  	</update>
+  	
+  	<!-- 统计记录总数 -->
+   <select id="getRowCount" resultType="int">
+      select count(*) 
+      from sys_stu
+      <include refid="queryWhereId"/>
+   </select>
+   
+   <select id="findObjectById" resultType="com.kb.sys.entity.SysStu">
+   	select * from sys_stu where id=#{id}
+   </select>
+  </mapper>

@@ -1,0 +1,115 @@
+<!-- Horizontal Form -->
+<div class="box box-info">
+	<div class="box-header with-border">
+		<h3 class="box-title">添加中心</h3>
+	</div>
+	<!-- /.box-header -->
+	<!-- form start -->
+	<form class="form-horizontal">
+		<div class="box-body">
+			<div class="form-group">
+				<label for="nameId" class="col-sm-2 control-label">名称</label>
+
+				<div class="col-sm-10">
+					<input type="text" class="form-control" name="name" id="nameId"
+						placeholder="名称">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="noteId" class="col-sm-2 control-label">地址</label>
+
+				<div class="col-sm-10">
+					<input type="text" class="form-control" name="note" id="noteId"
+						placeholder="地址">
+				</div>
+			</div>
+			<div class="form-group">
+				<label for="classinfo" class="col-sm-2 control-label">中心课程</label>
+
+				<div class="col-sm-10">
+					<input type="text" class="form-control" name="note" id="classinfo"
+						placeholder="中心课程">
+				</div>
+			</div>
+
+		</div>
+		<!-- /.box-body -->
+		<div class="box-footer">
+			<button type="button" class="btn btn-default btn-cancel">Cancel</button>
+			<button type="button" class="btn btn-info pull-right btn-save">Save</button>
+		</div>
+		<!-- /.box-footer -->
+	</form>
+</div>
+<script type="text/javascript"
+	src="bower_components/ztree/jquery.ztree.all.min.js"></script>
+<script type="text/javascript">
+	$(function() {
+
+		$(".box-footer").on("click", ".btn-save", doSaveOrUpdate).on("click",
+				".btn-cancel", doCancel);
+
+	});
+
+	function doCancel() {
+		$("#mainContentId").load("center/doCenterListUI", function() {
+			//移除绑定的数据(修改时会用)
+			$("#mainContentId").removeData();
+		});
+	}
+
+	//业务实现(save按钮事件处理)
+
+	function doSaveOrUpdate() {
+		//1.获取表单数据
+		var params = doGetEditFormData();
+		var rowData = $("#mainContentId").data("rowData");
+		//2.定义url
+		var insertUrl = "center/doSaveObject";
+		var updateUrl = "center/doUpdateObject";
+		var url = rowData ? updateUrl : insertUrl;
+		if (rowData)
+			params.id = rowData.id;
+		//3.异步提交数据
+		$.post(url, params, function(result) {
+			if (result.state == 1) {
+				alert(result.message);
+				doCancel();
+			} else {
+				alert(result.message);
+			}
+		});
+	}
+
+	$(function(){
+	     
+		  var data=$("#mainContentId").data("rowData");
+		  if(data)doInitEditFormData(data);
+	  });	
+
+	function doInitEditFormData(data){
+		  $("#nameId").val(data.centername);
+		  $("#noteId").val(data.addr);
+		  $("#classinfo").val(data.classInfo);
+	  }
+
+
+
+	//获取表单数据
+	function doGetEditFormData() {
+		var params = {
+			centername : $("#nameId").val(),
+			addr : $("#noteId").val(),
+			classInfo : $("#classinfo").val()
+		}
+
+		return params;
+	}
+</script>
+
+
+
+
+
+
+

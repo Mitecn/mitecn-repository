@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kb.sys.dao.SysRoleDao">
+	<select id="findObjectById"
+		resultType="com.kb.sys.entity.SysRole">
+		select * from sys_role where id=#{roleId}
+	</select>
+	<select id="findPageObjects"
+		resultType="com.kb.sys.entity.SysRole">
+		select sys_role.id,role from
+		sys_role
+		<include refid="queryWhereId" />
+		order by role desc
+		limit #{startIndex},#{pageSize}
+	</select>
+	<select id="getRowCount" resultType="int">
+		select count(*)
+		from sys_role
+		<include refid="queryWhereId" />
+	</select>
+	<sql id="queryWhereId">
+		<where>
+			<if test="role!=null and role!=''">
+				role like concat("%",#{role},"%")
+			</if>
+		</where>
+	</sql>
+
+	<insert id="saveObject"
+		parameterType="com.kb.sys.entity.SysRole">
+
+		insert into sys_role
+		values
+		(null,#{role})
+	</insert>
+
+	<delete id="deleteObject" parameterType="int">
+		delete
+		from sys_role
+		where id=#{id}
+	</delete>
+</mapper>

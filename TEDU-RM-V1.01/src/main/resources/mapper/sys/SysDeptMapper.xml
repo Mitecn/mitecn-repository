@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kb.sys.dao.SysDeptDao">
+	<select id="findObjectById"
+		resultType="com.kb.sys.entity.SysDept">
+		select * from sys_dept where id=#{deptId}
+	</select>
+	<select id="findPageObjects"
+		resultType="com.kb.sys.entity.SysDept">
+		select * from sys_dept
+		<include refid="queryWhereId" />
+		order by id
+		limit #{startIndex},#{pageSize}
+
+	</select>
+	<sql id="queryWhereId">
+		<where>
+			<if test="dept!=null and dept!=''">
+				dept like concat("%",#{dept},"%")
+			</if>
+		</where>
+	</sql>
+
+
+	<!-- 根据id删除 -->
+	<delete id="deleteObject">
+		delete from sys_dept where id=#{id}
+	</delete>
+
+	<insert id="insertObject"
+		parameterType="com.kb.sys.entity.SysDept">
+		insert into sys_dept (dept)
+		values (#{dept})
+	</insert>
+
+	<!-- 统计记录总数 -->
+	<select id="getRowCount" resultType="int">
+		select count(*)
+		from sys_stu
+		<include refid="queryWhereId" />
+	</select>
+	<!-- 修改 -->
+	<update id="updateObject">
+		update sys_dept set dept=#{dept} where id= #{id}
+	</update>
+</mapper>

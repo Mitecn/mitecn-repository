@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kb.sys.dao.SysKBDao">
+
+	<sql id="queryWhereId">
+		<where>
+			<if test="name != null and name != ''">
+				name like concat("%",#{name},"%")
+			</if>
+		</where>
+	</sql>
+
+	<select id="findRows" resultType="int">
+		select count(*) from sys_kb
+		<include refid="queryWhereId" />
+	</select>
+
+	<update id="updateSysKB" parameterType="com.kb.sys.entity.SysKB">
+		update sys_kb
+		set
+		name=#{name},uId=#{uId},tName=#{tName}
+		where id=#{id}
+	</update>
+
+	<insert id="insertSysKB" parameterType="com.kb.sys.entity.SysKB">
+		insert into sys_kb
+		(name,uId,tName)
+		values
+		(#{name},#{uId},#{tName})
+	</insert>
+
+	<select id="findPageObjects"
+		resultType="com.kb.sys.entity.SysKB">
+		select * from sys_kb
+		<include refid="queryWhereId" />
+		limit #{startIndex},#{pageSize}
+	</select>
+
+	<delete id="deleteSysKB">
+		delete from sys_kb
+		where id in
+		<foreach collection="ids" open="(" close=")" separator=","
+			item="id">
+			#{id}
+		</foreach>
+
+	</delete>
+</mapper>
+
+
+
+
+
+
+

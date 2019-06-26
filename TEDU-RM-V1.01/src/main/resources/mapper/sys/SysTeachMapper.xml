@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  <mapper namespace="com.kb.sys.dao.SysTeachDao">
+  <sql id="queryWhereName">
+  <where>
+  	<if test="tname !=null and tname !=''">
+  		tname like concat("%",#{tname},"%")
+  	</if>
+  </where>
+  </sql>
+  
+  <insert id="insertObject" parameterType="com.kb.sys.entity.SysTeach">
+  insert into sys_teach (tname,loginname,password,role_id,dept_id,class_no) values (#{tname},#{loginname},
+  #{password},#{roleId},#{deptId},#{classNo})
+  </insert>
+  
+  <select id="findObject" resultType="com.kb.sys.entity.SysTeach">
+  	select * from sys_teach
+  	<include refid="queryWhereName"/>
+  	limit #{startIndex},#{pageSize}
+  </select>
+  <update id="updateObject" parameterType="com.kb.sys.entity.SysTeach">
+  	update sys_teach set tname=#{tname},password=#{password},role_id=#{roleId},dept_id=#{deptId},
+  	class_no=#{classNo} where id=#{id}
+  </update>
+  <select id="getRowCount" resultType="int">
+  	select count(*) from sys_teach <include refid="queryWhereName"/>
+  </select>
+  
+  <resultMap type="com.kb.sys.vo.SysTeachVo" id="SysTeachVo">
+  	<association property="role" column="roleId" select="com.kb.sys.dao.SysRoleDao.findObjectById"></association>
+  	<!-- <association property="dept" column="deptId" select="com.kb.sys.dao.SysDepthDao.findObjectById"></association>
+  	<association property="cla" column="classNo" select="com.kb.sys.dao.SysClasshDao.findObjectById"></association>,dept_id deptId,class_no classNo -->
+  </resultMap>
+  <select id="findVo" resultMap="SysTeachVo">
+  	select id,tname,loginname,role_id roleId from sys_teach
+  	<include refid="queryWhereName"/>
+  	limit #{startIndex},#{pageSize}
+  </select>
+  
+  
+  </mapper>

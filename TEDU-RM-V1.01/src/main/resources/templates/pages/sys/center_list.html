@@ -1,0 +1,308 @@
+<div class="row">
+	<div class="col-xs-12">
+		<div class="box">
+			<div class="box-header">
+				<h3 class="box-title">中心管理</h3>
+
+				<div class="box-tools">
+					<div class="input-group input-group-sm" style="width: 163px;">
+
+						<div class="input-group-btn">
+							<button type="button" class="btn btn-default btn-delete">删除</button>
+							<button type="button" class="btn btn-default btn-add">添加</button>
+							<button type="button" class="btn btn-default btn-update">修改</button>
+							<button type="button" class="btn btn-default btn-baidu">查看地图</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- /.box-header -->
+			<div class="box-body table-responsive no-padding">
+				<form>
+					<table class="table table-hover">
+						<thead>
+							<tr>
+								<th><input type="checkbox" id="checkAll">全选</th>
+								<th>序号</th>
+								<th>中心名称</th>
+								<th>中心地址</th>
+								<th>中心课程</th>
+							</tr>
+						</thead>
+						<tbody id="tbodyId">
+						</tbody>
+					</table>
+				</form>
+			</div>
+			<!-- /.box-body -->
+			<div id="pageId" class="box-footer clearfix"></div>
+		</div>
+		<!-- /.box -->
+	</div>
+</div>
+<script type="text/javascript">
+	$(function() {
+		var pageUrl = "doPageUI";
+		//异步加载pageUrl页面
+		$("#pageId").load(pageUrl, function() {
+			//异步加载信息(数据)
+			doGetObjects();
+		});
+		 $(".input-group-btn")
+		   //查询按钮事件注册
+		   .on("click",".btn-search",doQueryObjects)
+		   .on("click",".btn-delete",doDeleteObjects)
+		   
+
+		//thead中全选按钮事件注册
+		$("#checkAll").click(doChangeTBodyCheckBoxState);
+		//tbody中checkbox对象事件注册
+		$("#tbodyId").on("click", ".cBox", doChangeTHeadCheckBoxState)
+	});
+	$(".input-group-btn").on("click",".btn-baidu",doFindAddr)
+	function doFindAddr(){
+		var id = doGetCheckedId(); 
+		console.log(id+"点击地图查询")
+		var params = {"id":id}
+		var url = "center/doFindAddr";
+		$.getJSON(url,params, function(result) {//jsonResult
+			if(result.state==1){
+				$("#mainContentId").data("addr",result.data);
+				doLoadMap();
+			}
+		});	
+	}
+	function doLoadMap(){
+		var url = "center/doMapUI";
+		$("#mainContentId").load(url, function() {
+			$(".box-title").html("中心地址");
+		})
+	}
+	
+	//修改thead中checkbox状态
+	function doChangeTHeadCheckBoxState() {
+		//1.获取所有tbody中checkbox对象状态相与的结果
+		var flag = true;
+		$("#tbodyId input[type='checkbox']").each(function() {
+			flag = flag && $(this).prop("checked");
+		});
+		//2.设置thead中checkbox状态值为flag
+		$("#checkAll").prop("checked", flag);
+	}
+	//修改tbody中checkbox的状态值
+	function doChangeTBodyCheckBoxState() {
+		//1.获取thead中全选按钮状态值
+		var flag = $(this).prop("checked");
+		//2.修改tbody中checkbox的状态值
+		$("#tbodyId input[type='checkbox']").each(function() {
+			$(this).prop("checked", flag);
+		});
+	}
+
+	
+	//点击查询按钮时执行分页查询操作
+	function doQueryObjects() {
+		//debugger
+		console.log("doQueryObjects()");
+		//1.设置当前页码值
+		$("#pageId").data("pageCurrent", 1);
+		//2.执行查询操作
+		doGetObjects();
+	}
+	function doGetObjects() {
+		$("#checkAll").prop("checked", false);
+		//1.url
+		var url = "center/doFindPageObjects";
+		//2.params
+		var pageCurrent = $("#pageId").data("pageCurrent");
+		if (!pageCurrent)
+			pageCurrent = 1;
+		var params = {
+			"pageCurrent" : pageCurrent
+		};
+		var centername = $("#searchNameId").val();
+		if (centername) {
+			params.centername = centername;
+		}
+		//3.send request 
+		//getJSON底层会向服务端发送异步请求
+		//服务端结果响应到客户端以后会调用function(result){}函数
+		console.log("params", params);
+		$.getJSON(url, params, function(result) {//jsonResult
+			doHandleResponseResult(result);
+		});
+	}
+	//处理服务端返回的结果
+	function doHandleResponseResult(result) {
+		//console.log(result);
+		if (result.state == 1) {//呈现数据(重点)
+			//将记录呈现在本页面的tbody位置
+			doSetTableBodyRows(result.data.records);
+			//将分页信息呈现在分页div中
+			doSetPagination(result.data);
+		} else {
+			alert(result.message);
+		}
+	}
+	//将记录呈现在tbody中
+	function doSetTableBodyRows(records) {
+		//1.获取tbody对象,并清空
+		var tBody = $("#tbodyId");
+		tBody.empty();
+		//2.将记录records进行呈现
+		//2.1迭代记录集
+		for (var i = 0; i < records.length; i++) {
+			//2.2 创建tr对象
+			var tr = $("<tr></tr>");
+			//2.3 创建多个td对象
+			var tds = doCreateTds(records[i]);
+			//2.4 将td对象追加到tr中
+			tr.append(tds);
+			//2.5 将tr追加到tbody中
+			tBody.append(tr);
+		}
+	}
+	function doCreateTds(data) {
+		var tds = "<td><input type='checkbox' class='cBox' name='cItem' value='"+data.id+"'> </td>"
+				+ "<td>"
+				+ data.id
+				+ "</td>"
+				+ "<td>"
+				+ data.centername
+				+ "</td>"
+				+ "<td>"
+				+ data.addr
+				+ "</td>"
+				+ "<td>"
+				+ data.classInfo + "</td>";
+		return tds;
+	}
+
+	$(".input-group-btn").on("click", ".btn-add", doLoadEditUI);
+	$(".input-group-btn").on("click", ".btn-update", doLoadEditUI);
+	
+	function doLoadEditUI() {
+		var title;
+		if ($(this).hasClass('btn-add')) {
+			title = "添加中心";
+			doLoadPageUI(title);
+		}else if($(this).hasClass("btn-update")){
+			   title="修改中心";
+			   var id=doGetCheckedId();
+			   console.log("id="+id)
+			   if(!id){
+				  alert("请先选择");
+				  return;
+			   }
+			  //doLoadPageUI(title);
+			   //基于id进行查询并加载编辑页面
+			   doFindObjectById(id,title);
+		   }
+	   }
+	function doFindObjectById(id,title){
+		   //1.params
+		   var params={"id":id};
+		   //2.url
+		   var url="center/doFindObjectById";
+		   //3.ajax request
+		   $.getJSON(url,params,function(result){//JsonResult
+			   if(result.state==1){
+				  $("#mainContentId").data("rowData",result.data); 
+				  doLoadPageUI(title);
+			   }else{
+				  alert(result.message);
+			   }
+		   });
+	   }
+	function doGetCheckedId(){
+		return $("tbody input[name='cItem']:checked").val();
+	   }
+	
+	
+	function doLoadPageUI(title) {
+		var url = "center/doCenterEditUI"
+		$("#mainContentId").load(url, function() {
+			$(".box-title").html(title);
+		})
+	}
+
+
+	/*执行删除操作*/
+	function doDeleteObjects() {
+		//1.获取选中的id值
+		var ids = doGetCheckedIds();
+		if (ids.length == 0) {
+			alert("至少选择一个");
+			return;
+		}
+		//2.发异步请求执行删除操作
+		var url = "center/doDeleteObjects";
+		var params = {
+			"ids" : ids.toString()
+		};
+		console.log(params);
+		$.post(url, params, function(result) {
+			if (result.state == 1) {
+				alert(result.message);
+				doGetObjects();
+			} else {
+				alert(result.message);
+			}
+		});
+	}
+
+	function doGetCheckedIds() {
+		//定义一个数组,用于存储选中的checkbox的id值
+		var array = [];//new Array();
+		//获取tbody中所有类型为checkbox的input元素
+		$("#tbodyId input[type=checkbox]").
+		//迭代这些元素，每发现一个元素都会执行如下回调函数
+		each(function() {
+			//假如此元素的checked属性的值为true
+			if ($(this).prop("checked")) {
+				//调用数组对象的push方法将选中对象的值存储到数组
+				array.push($(this).val());
+			}
+		});
+		return array;
+	}
+
+	//当tbody中checkbox的状态发生变化以后
+	//修改thead中全选元素的状态值。
+	function doChangeTHeadCheckBoxState() {
+		//1.设定默认状态值
+		var flag = true;
+		//2.迭代所有tbody中的checkbox值并进行与操作
+		$("#tbodyId input[name='cItem']").each(function() {
+			flag = flag & $(this).prop("checked")
+		});
+		//3.修改全选元素checkbox的值为flag
+		$("#checkAll").prop("checked", flag);
+	}
+
+	/*实现全选操作*/
+	function doChangeTBodyCheckBoxState() {
+		//1.获取当前点击对象的checked属性的值
+		var flag = $(this).prop("checked");//true or false
+		//2.将tbody中所有checkbox元素的值都修改为flag对应的值。
+		//第一种方案
+		/* $("#tbodyId input[name='cItem']")
+		.each(function(){
+		   $(this).prop("checked",flag);
+		}); */
+		//第二种方案
+		$("#tbodyId input[type='checkbox']").prop("checked", flag);
+	}
+
+	function doSetPageCurrent() {
+		var pageCount = $("#pageId").data("pageCount");
+		var pageCurrent = $("#pageId").data("pageCurrent");
+		var checked = $("#checkAll").prop("checked");
+		if (pageCurrent == pageCount && checked && pageCurrent > 1) {
+			pageCurrent--;
+			$("#pageId").data("pageCurrent", pageCurrent);
+		}
+	}
+
+	
+</script>
